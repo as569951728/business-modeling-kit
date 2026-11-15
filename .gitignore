@@ -1,0 +1,21 @@
+# Local OS and editors
+.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+
+# Credentials and environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Generated files and private project work
+__pycache__/
+.venv/
+tmp/
+output/
+private/
+customer-projects/
