@@ -99,14 +99,15 @@ def initialize(project, task="", materials=None, mode="plan", scope=None):
         save_new(project / name, (KIT / source).read_text(encoding="utf-8"))
     save_new(project / "AI接续.md", """# 本项目业务建模接续
 
-先读 business-model-project.json，按其中 kit_path 找到工具包 AGENTS.md 和 08 学习路线。
+先读 business-model-project.json，按其中 kit_path 找到工具包 AGENTS.md 和 docs/建模/08-实施方案与学习路线.md。
 再读本项目背景、实施方案、建模记录与资料索引；根据用户当前任务推进。
 plan 仅准备方案，learn 解释并带学，execute 在已明确范围内执行；最新用户要求优先。
 登记文件中的路径和状态由 AI 维护，原始资料与业务结论仍需独立核查。
 没有实际证据不要标 done；不适用需写理由。模板存在不是步骤完成。
-每次开工、接续和收活，先用 kit.py status 查看当前登记和实际证据，按 11 汇报当前节点、已完成、尚缺及流程下一步。
+每次开工、接续和收活，先用根目录 kit.py status 查看登记和实际证据，按 docs/项目协作/11-工作进度与接续.md 汇报当前节点、已完成、尚缺及流程下一步。
 工作进度.md 是登记的可读视图，由 AI 更新登记后生成。下一步来自本轮范围内最早未完成步骤；额外建议另列。
 若登记的工具包路径已失效，定位新位置并告知用户后修正登记，不改客户成果。
+旧编号文档已按用途归入 docs；遇到旧路径先读 docs/维护/升级与路径对照.md，不重新初始化或清空项目状态。
 """)
     agents = project / "AGENTS.md"
     old = agents.read_text(encoding="utf-8") if agents.exists() else ""
@@ -122,7 +123,7 @@ plan 仅准备方案，learn 解释并带学，execute 在已明确范围内执�
 def load_project(project):
     p = project / MANIFEST
     if not p.is_file():
-        raise ValueError("未找到项目登记；先使用 init，或按 05 文档手工接续现有项目。")
+        raise ValueError("未找到项目登记；先使用 init，或按 docs/项目协作/05-项目启动与定制.md 接续现有项目。")
     try:
         c = json.loads(p.read_text(encoding="utf-8"))
     except (ValueError, UnicodeError) as e:
@@ -373,8 +374,9 @@ def set_scope(project, scope, reason):
 
 def package_issues(root):
     errors = []
-    required = ["AGENTS.md", "START-HERE.md", "VERSION", "08-实施方案与学习路线.md",
-                "11-工作进度与接续.md", "templates/工作进度.md",
+    required = ["AGENTS.md", "START-HERE.md", "VERSION", "docs/快速开始.md", "docs/README.md",
+                "docs/建模/08-实施方案与学习路线.md", "docs/项目协作/11-工作进度与接续.md",
+                "docs/维护/升级与路径对照.md", "templates/工作进度.md",
                 "templates/实施方案.md", "assets/客户现场Checkpoint.pdf", *FILES.values()]
     for name in required:
         if not (root / name).is_file():
