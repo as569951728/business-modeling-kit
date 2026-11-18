@@ -1,0 +1,52 @@
+{
+  "kind": "作者按文档手动实例化并检查文件，不是独立AI或客户指标测试",
+  "checks": [
+    {
+      "check": "新项目先建唯一指标入口，没有复制全部模板",
+      "passed": true
+    },
+    {
+      "check": "原始材料保留",
+      "passed": true
+    },
+    {
+      "check": "新入口引用可访问",
+      "passed": true
+    },
+    {
+      "check": "迁出模板的方法链接可访问",
+      "passed": true
+    },
+    {
+      "check": "模板中的14章方法链接已改为实际工具包引用",
+      "passed": true
+    },
+    {
+      "check": "再次接手保留现有文件和入口，不重复覆盖",
+      "passed": true
+    },
+    {
+      "check": "已有业务模型登记和成果逐文件哈希不变",
+      "passed": true
+    },
+    {
+      "check": "已有项目规则保留，仅追加指标入口",
+      "passed": true
+    },
+    {
+      "check": "业务模型S1状态保留且未混入M阶段",
+      "passed": true
+    },
+    {
+      "check": "原业务模型登记仍可结构检查",
+      "passed": true
+    },
+    {
+      "check": "指标模板仍为未开始而非假完成",
+      "passed": true
+    }
+  ],
+  "passed": 11,
+  "total": 11,
+  "customer_runs": 0
+}
