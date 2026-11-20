@@ -260,28 +260,56 @@ textarea { display:block; width:100%; resize:vertical; min-height:85px; padding:
  .footer { margin-top:10px; }
  textarea { border:0; }
 }
+
+.task-entry { display:grid; grid-template-columns:1.2fr 1fr; gap:24px; padding:20px 24px; margin:12px 0 22px; border:1px solid var(--line); border-radius:9px; background:var(--paper); }
+.task-entry strong { display:block; font-size:16px; margin:6px 0; }
+.task-entry p:not(.eyebrow) { font-size:13px; color:var(--sub); }
+.not-ready { border-left:1px solid var(--line); padding-left:24px; }
+.batch-strip { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; }
+.batch-strip strong { font-size:15px; }.batch-strip p { margin:0; }
+.item-nav { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.item-nav button { padding:9px 14px; border:1px solid var(--line); background:var(--paper); border-radius:6px; color:var(--ink); text-align:left; font-size:14px; }
+.item-nav button[aria-current=true] { border-color:var(--blue); background:var(--soft); }
+.item-nav small { display:block; font-size:12px; }
+.review-actions { display:grid; grid-template-columns:1.2fr 1fr; gap:10px; }
+.review-actions button { padding:12px 10px; }
+.save-status { font-size:14px; color:#376548; margin:12px 0 4px; }
+.save-status.unsaved { color:var(--amber); }
+.review .storage-hint { margin-left:0; }
+.record-tools { display:flex; justify-content:space-between; gap:10px; border-top:1px solid var(--line); margin-top:12px; padding-top:8px; }
+button:disabled { cursor:not-allowed; opacity:.5; }
+.batch-summary { margin-top:18px; }
+#summary-items { list-style:none; margin:18px 0; padding:0; }
+#summary-items li { padding:14px 0; border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:15px; }
+#summary-items p { font-size:13px; color:var(--sub); overflow-wrap:anywhere; white-space:pre-wrap; }
+@media(max-width:999px) { .task-entry { grid-template-columns:1fr; gap:16px; } .not-ready { border-left:0; border-top:1px solid var(--line); padding:16px 0 0; } }
+@media(max-width:540px) { .task-entry { padding:16px; } .review-actions { grid-template-columns:1fr; } .item-nav button { flex:1; } }
 </style>
 </head>
 <body>
 <header class="top"><div class="top-inner"><div class="brand">业务建模工具包<span>在工作中学习</span></div><span class="tag">交互样稿 · 未接入项目</span></div></header>
 <main class="wrap">
- <p class="notice">虚构维修案例 · 样稿 2026-11-20。选择仅在本页有效；刷新不保留，下载反馈后可交给 AI。</p>
+ <p class="notice">虚构维修案例 · 样稿 2026-11-20。点“记录本条核对”后保存在当前浏览器；不会自动交给 AI。下载记录后可交回，或直接在聊天里回复。</p>
  <div class="heading"><div><p class="eyebrow">当前工作 / 本步核对</p><h1>看清这一条，再走下一步</h1></div><div class="switch" aria-label="切换模块"><button type="button" data-mode="model" aria-pressed="false">业务模型</button><button type="button" data-mode="metric" aria-pressed="true">指标库</button></div></div>
  <div class="layout">
   <aside class="sidebar" aria-label="流程位置"><p class="eyebrow">完整路线</p><ol class="stages" id="stages"></ol><button type="button" class="route-toggle" id="route-toggle" aria-expanded="false" aria-controls="stages">展开完整路线</button><div class="sidebar-foot">路线用于定位。<br>演示未运行构建、测试，也未取得业务确认。</div></aside>
   <div>
    <section class="stage-box" aria-labelledby="stage-title"><h2 id="stage-title"></h2><p id="purpose" class="muted"></p><div class="meta"><span>AI 产物：<b>演示草稿已备好</b></span><span>本人核对：<b id="human-status">尚未反馈</b></span><span>业务待核：<b>1 项</b></span></div></section>
-   <nav class="tabs" aria-label="核对内容"><button type="button" data-view="review" aria-pressed="true">本步核对<span class="count">1</span></button><button type="button" data-view="questions" aria-pressed="false">带去业务的问题<span class="count">1</span></button></nav>
+   <section class="task-entry" aria-label="本次核对入口"><div><p class="eyebrow">这次在哪里核对</p><strong id="entry-title"></strong><p id="entry-description"></p><button type="button" class="secondary" id="go-review">进入本条核对 ↓</button></div><div class="not-ready"><span class="tag pending">下一步 · 页面待准备</span><strong id="unready-title"></strong><p>当前例子用于理解本步，不能代替下一步的完整核对材料。准备好后，AI 再提供直达入口。</p></div></section>
+   <p class="error" id="storage-warning" role="status" hidden></p>
+   <nav class="tabs" aria-label="核对内容"><button type="button" data-view="review" aria-pressed="true">本步核对<span class="count" id="item-count">2</span></button><button type="button" data-view="questions" aria-pressed="false">带去业务的问题<span class="count">1</span></button></nav>
+   <div class="batch-strip"><div><strong id="batch-progress"></strong><p class="hint" id="batch-detail"></p></div><button class="text-action" type="button" id="show-summary">查看本批记录</button></div>
+   <nav id="item-nav" class="item-nav" aria-label="本批核对条目"></nav>
    <section class="sheet" id="review-panel" aria-labelledby="item-title">
-    <div class="sheet-head"><span class="id" id="item-id"></span><span class="tag">演示草稿 · 待核对</span></div>
-    <h2 id="item-title"></h2>
+    <div class="sheet-head"><span class="id" id="item-id"></span><span class="tag" id="item-status">待核对</span></div>
+    <h2 id="item-title" tabindex="-1"></h2>
     <div class="focus-box"><p class="focus-label">这次请核对</p><p class="focus-title" id="review-focus"></p></div>
     <div class="work-columns">
     <div class="reading-column">
     <div class="section-heading"><span class="step-number">01</span><h3>先看懂这条内容</h3></div>
     <section class="review-block purpose-block" aria-labelledby="purpose-label"><h4 id="purpose-label" class="block-label">用来判断什么</h4><p class="purpose-answer" id="meaning"></p><p class="scope-note" id="scope-note"></p></section>
-    <section class="review-block" aria-labelledby="rules-label"><h4 id="rules-label" class="block-label">口径怎么定</h4><dl class="rule-cards" id="facts"></dl><div class="calculation"><span class="calculation-label" id="flow-label"></span><ol class="calculation-steps" id="calculation-steps"></ol></div></section>
-    <section class="review-block example-block" aria-labelledby="example-label"><div class="block-heading"><h4 id="example-label" class="block-label">一例看懂</h4><span class="example-id" id="example-id"></span></div><ol class="example-track" id="example-track"></ol><p class="example-note" id="example-note"></p></section>
+    <section id="review-rules" class="review-block" aria-labelledby="rules-label"><h4 id="rules-label" class="block-label">口径怎么定</h4><dl class="rule-cards" id="facts"></dl><div class="calculation"><span class="calculation-label" id="flow-label"></span><ol class="calculation-steps" id="calculation-steps"></ol></div></section>
+    <section id="review-example" class="review-block example-block" aria-labelledby="example-label"><div class="block-heading"><h4 id="example-label" class="block-label">一例看懂</h4><span class="example-id" id="example-id"></span></div><ol class="example-track" id="example-track"></ol><p class="example-note" id="example-note"></p></section>
     <section class="review-block pending-block" aria-labelledby="pending-label"><div class="block-heading"><h4 id="pending-label" class="block-label">哪些仍待核</h4><span class="tag pending">待业务核实</span></div><p id="limit-summary"></p><button type="button" class="text-action" id="open-pending">查看要问业务的问题 →</button><details class="limit-details"><summary>展开完整适用范围与限制</summary><p id="limit"></p></details></section>
     <details class="source"><summary>查看依据与原文位置</summary><div class="source-content" id="sources"></div></details>
     </div>
@@ -296,7 +324,7 @@ textarea { display:block; width:100%; resize:vertical; min-height:85px; padding:
      </div>
      <label class="fieldlabel" for="feedback">补充意见 <span class="muted">（可以用自己的话说）</span></label><textarea id="feedback" placeholder="例如：完工和验收我还分不清，请先解释；我会找业务核对重复签认。"></textarea>
      <p class="error" id="error" role="alert" hidden></p>
-     <div class="actions"><button type="submit" class="primary">生成给 AI 的反馈</button><span class="hint">生成后可下载；不会提交或推进项目。</span></div>
+     <div class="actions review-actions"><button type="submit" class="primary" id="save-review">记录本条核对</button><button type="button" class="secondary" id="next-item">下一条 →</button></div><p class="save-status" id="save-status" role="status" aria-live="polite"></p><p class="hint storage-hint">记录保存在此浏览器。下一条只是切换内容，不算确认，也不进入下一流程。</p><div class="record-tools"><button type="button" class="text-action" id="previous-item">← 上一条</button><button type="button" class="text-action" id="export-review" disabled>下载本条已记录意见</button></div>
     </form>
     <p class="next" id="next"></p>
     <div id="review-export-slot"></div>
@@ -327,80 +355,12 @@ textarea { display:block; width:100%; resize:vertical; min-height:85px; padding:
      </aside>
     </div>
    </section>
+   <section class="sheet batch-summary" id="batch-summary" aria-labelledby="summary-title" hidden><div class="sheet-head"><h2 id="summary-title" tabindex="-1">本批核对记录</h2><button type="button" class="secondary" id="back-to-review">返回本条</button></div><p id="summary-description"></p><ul id="summary-items"></ul><button class="secondary" type="button" id="download-batch">下载本批已记录意见</button><p class="hint" id="batch-download-status" role="status"></p><p class="hint">已记录不等于都理解一致；待解释、修改和业务核实仍需处理。下载或看完不自动进入下一阶段。</p></section>
    <section class="export" id="export-panel" aria-labelledby="export-title" hidden><h3 id="export-title">反馈草稿</h3><p class="hint" id="export-hint"></p><textarea id="export-text" aria-label="可复制的反馈内容" readonly></textarea><div class="actions"><button type="button" class="secondary" id="download">下载本条反馈</button><span class="readystate" id="download-status" aria-live="polite"></span></div></section>
    <p class="footer">后台知识与证据仍由 AI 维护。页面绑定条目和版本，阅读、反馈、采用、真实测试和业务签署各有自己的状态。</p>
   </div>
  </div>
 </main>
-<script>
-(() => {
- 'use strict';
- const data = {
-  metric:{
-   node:'M1', id:'MET-DEMO-01', version:'demo-v1', title:'月度有效验收工单数',
-   stage:'M1 · 核对指标口径', purpose:'本步先讲清算什么、怎样算、依据在哪里。核对后再准备独立计算样例。',
-   meaning:'这个月，有多少张工单完成了客户的有效验收？',
-   scope:'只看验收数量；不能据此判断收入、满意度或结算金额。', rulesLabel:'口径怎么定',
-   facts:[['统计对象','工单','每张工单只计一次'],['归月依据','有效签认日期','不按施工完工日期'],['去重依据','工单 ID','派工 ID 不能替代']],
-   flowLabel:'计算顺序', flow:['筛选本月有效签认','按工单 ID 去重','计数，单位：张'],
-   exampleId:'工单 B · 2026 年', exampleSteps:[['施工完工','11 月 30 日'],['有效签认','12 月 1 日'],['计入月份','12 月']],
-   exampleNote:'因此不计入 11 月。依据 MR1–MR3；这是规则示例，实际程序未运行。',
-   pending:'缺签认仅表示资料未知；出现多份签认时，先核实哪份有效。不能直接当零，或任取一份。',
-   limit:'本例按 Asia/Shanghai 的自然月统计，月初包含、下月初不含。本小样本每单最多一条有效签认；缺签认不代表未验收，多条冲突签认须待核。只做只读汇总，不做结算或改状态；不能推断真实项目已覆盖异常。',
-   next:'你核对后，流程下一步是 M2：让 AI 准备独立样例和期望结果。仍由你发出下一步指令。',
-   steps:[['M0','任务与适配'],['M1','口径与映射'],['M2','独立标准'],['M3','构建指标库'],['M4','加载与检查'],['M5','实际验证'],['M6','验收与交接']]
-  },
-  model:{
-   node:'S3', id:'CAND-DEMO-01', version:'demo-v1', title:'工单、派工与验收签认',
-   stage:'S3 · 组织业务模型', purpose:'本步把已有候选认识组织成模型草稿，解释对象之间的关系和仍待核的边界。',
-   meaning:'分清“维修任务、人员安排、客户验收”三件事。',
-   scope:'仅据虚构维修材料形成的模型草稿，尚无真实项目采用记录。', rulesLabel:'对象与关系怎么定',
-   facts:[['工单','维修任务','用工单 ID 区分身份'],['派工','人员安排','多次派工可关联同单'],['签认','客户验收','签认与完工时间分开']],
-   flowLabel:'本例的关系', flow:['一张工单','可以关联多条派工记录'],
-   exampleId:'工单 A · MR2–MR3', exampleSteps:[['业务任务','工单 A'],['派工记录','A1、A2'],['工单数量','仍为 1 张']],
-   exampleNote:'两次派工不等于两张工单。保留关联和工单身份，后续统计才能避免重复计数。',
-   pending:'本例限定每单最多一条有效签认；真实业务出现多份签认时，取舍规则及时间仍需核实。',
-   limit:'这里使用 MR1–MR3 的虚构材料。不能把“样本每单最多一条有效签认”外推为全公司的规则；缺签认仅说明材料未知。用户理解一致不等于业务方确认或正式采用。',
-   next:'你核对后，流程下一步是 S4：设计来源对照和使用测试。未决条目仍保留待核，不靠点击变成事实。',
-   steps:[['plan','任务与方案'],['S1','材料盘点'],['S2','候选提取'],['S3','核查建模'],['S4','测试准备'],['S5','实际使用'],['S6','修订回归']]
-  }
- };
- const $=id=>document.getElementById(id);
- $('route-toggle').addEventListener('click',()=>{const expanded=$('route-toggle').getAttribute('aria-expanded')!=='true';$('route-toggle').setAttribute('aria-expanded',String(expanded));$('route-toggle').textContent=expanded?'收起完整路线':'展开完整路线';document.querySelector('.sidebar').classList.toggle('route-expanded',expanded);});
- let mode='metric', view='review', drafts={metric:{choice:'',text:''},model:{choice:'',text:''}}, exportData=null;
- function clearExport(){exportData=null;$('export-panel').hidden=true;$('download-status').textContent='';}
- function capture(){drafts[mode]={choice:document.querySelector('input[name="decision"]:checked')?.value||'',text:$('feedback').value};}
- function showView(name){view=name;document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));$('review-panel').hidden=view!=='review';$('questions-panel').hidden=view!=='questions';clearExport();}
- function render(){
-  const d=data[mode]; document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
-  $('stage-title').textContent=d.stage;$('purpose').textContent=d.purpose;$('item-id').textContent=d.id+' · '+d.version;$('item-title').textContent=d.title;
-  $('meaning').textContent=d.meaning;$('scope-note').textContent=d.scope;$('rules-label').textContent=d.rulesLabel;
-  $('review-focus').textContent=mode==='metric'?'一单只计一次，按有效签认日期归月。':'工单、派工、签认，是三种不同的业务记录。';
-  $('limit-summary').textContent=d.pending;$('limit').textContent=d.limit;$('next').textContent=d.next;
-  $('flow-label').textContent=d.flowLabel;
-  $('calculation-steps').replaceChildren(...d.flow.map(value=>{const li=document.createElement('li');li.textContent=value;return li;}));
-  $('example-id').textContent=d.exampleId;$('example-note').textContent=d.exampleNote;
-  $('example-track').replaceChildren(...d.exampleSteps.map(([label,value])=>{const li=document.createElement('li'),event=document.createElement('span'),answer=document.createElement('strong');event.className='example-event';event.textContent=label;answer.className='example-value';answer.textContent=value;li.append(event,answer);return li;}));
-  $('stages').replaceChildren(...d.steps.map(([code,label])=>{const li=document.createElement('li'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=code+' · '+label;small.textContent=code===d.node?'当前演示节点':'';if(code===d.node)li.setAttribute('aria-current','step');li.append(strong,small);return li;}));
-  $('facts').replaceChildren(...d.facts.map(([label,value,note])=>{const div=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd'),answer=document.createElement('strong'),hint=document.createElement('span');dt.textContent=label;answer.className='rule-value';answer.textContent=value;hint.className='rule-note';hint.textContent=note;dd.append(answer,hint);div.append(dt,dd);return div;}));
-  $('sources').innerHTML='<p><strong>来源：本包《维修指标完整示范》第一节，MR1–MR3。</strong>均为虚构教学材料，不是客户原件。</p><blockquote>MR1：按客户有效验收签认时间统计每月工单数量。<br>MR2：每个统计对象为工单；派工编号不是工单编号。<br>MR3：A 有两条派工；B 在 11 月完工、12 月签认。</blockquote><p>以上为来源摘要。<a href="../维修指标-完整示范.md" target="_blank" rel="noopener">可选：打开完整示范</a></p><p>提取后的演示解释与原文不是同一层；真实项目需替换成实际来源、定位和版本。</p>';
-  document.querySelectorAll('input[name="decision"]').forEach(r=>{r.checked=r.value===drafts[mode].choice;});$('feedback').value=drafts[mode].text;$('error').hidden=true;$('human-status').textContent=drafts[mode].choice||drafts[mode].text?'本页意见待交 AI':'尚未反馈';showView('review');
- }
- document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{capture();mode=b.dataset.mode;render();}));
- $('open-pending').addEventListener('click',()=>{showView('questions');$('question-title').scrollIntoView({block:'start'});});
- document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
- $('review-form').addEventListener('input',()=>{capture();clearExport();$('error').hidden=true;$('human-status').textContent=drafts[mode].choice||drafts[mode].text?'本页意见待交 AI':'尚未反馈';});
- function showExport(payload,text,title,hint){$(view==='questions'?'question-export-slot':'review-export-slot').append($('export-panel'));exportData=payload;$('export-title').textContent=title;$('export-hint').textContent=hint;$('export-text').value=text;$('export-panel').hidden=false;$('download-status').textContent='';}
- $('review-form').addEventListener('submit',event=>{event.preventDefault();capture();const f=drafts[mode],d=data[mode];if(!f.choice&&!f.text.trim()||(f.choice==='修改意见'&&!f.text.trim())){$('error').textContent=f.choice==='修改意见'?'请写下需要调整的地方，方便 AI 按你的意思处理。':'请选择处理方式，或直接写下意见。';$('error').hidden=false;return;}
-  const payload={kind:'review_draft',example:true,project:'虚构维修示范',module:mode,node:d.node,item_id:d.id,item_version:d.version,decision:f.choice||'自由反馈',user_text:f.text,source_ids:['MR1','MR2','MR3'],open_questions:['Q-DEMO-01'],created_at:new Date().toISOString(),status:'本页草稿，未交给 AI；非业务确认',next_step_requested:false};
-  const text='请按工具包处理这一条反馈，先解释影响，不自动推进后续步骤。\n项目：虚构维修示范（仅体验页面）\n条目：'+d.id+' / '+d.version+' / '+d.node+'\n我的处理：'+payload.decision+'\n我的原话：'+(f.text||'未补充')+'\n业务仍待核：Q-DEMO-01 多份签认。\n这份反馈不代表业务方确认、正式采用或验收通过。';
-  showExport(payload,text,'给 AI 的反馈草稿','可复制下面内容，或下载包含条目、版本和原话的反馈。未自动写入任何项目。');
- });
- $('question-export').addEventListener('click',()=>{const text='二次访谈提纲 · Q-DEMO-01\n虚构维修示范 / '+data[mode].id+' / '+data[mode].version+'\n\n现场问法：最近有没有同一工单留下两份签认记录的情况？当时怎么判断哪份有效，能一起看一下记录和处理经过吗？\n\n找谁：实际办理验收、保管签认记录的人；规则确认责任另核。\n带回：原问原答、处理实例、记录标识与时间、判断依据、说明人及范围。没有案例保留未知。\n影响：有效验收规则、计入月份、去重与跨月测试。\n回来后：交 AI 核来源与影响，再核对修订建议。\n实际答复：尚未取得。';showExport({kind:'interview_outline',example:true,item_id:data[mode].id,item_version:data[mode].version,question_id:'Q-DEMO-01',text},text,'可带走的访谈提纲','这是待问问题，尚无业务答复。复制或下载后使用。');});
- $('download').addEventListener('click',()=>{if(!exportData)return;const blob=new Blob([JSON.stringify(exportData,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=exportData.kind+'-'+exportData.item_id+'-'+exportData.item_version+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('download-status').textContent='已发起下载；请把文件交给 AI，不会自动提交。';});
- render();
- if(location.hash==='#questions')showView('questions');
-})();
-</script>
+<script src="review.js"></script>
 </body>
 </html>
