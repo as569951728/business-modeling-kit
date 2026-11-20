@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>逐步核对 · 业务建模工具包样稿</title>
+<style>
+:root { color-scheme:light; --ink:#283640; --sub:#637079; --line:#e2e6e5; --blue:#2c5fa1; --soft:#eef3f8; --paper:#fffefa; --bg:#f3f4f1; --amber:#795a25; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+button,input,textarea { font:inherit; }
+button { cursor:pointer; min-height:44px; }
+button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-visible { outline:3px solid #8fb0db; outline-offset:3px; }
+a { color:var(--blue); }
+p { margin:8px 0; }
+h1,h2,h3 { line-height:1.4; margin:0; }
+h1 { font-size:27px; font-weight:650; }
+h2 { font-size:25px; font-weight:650; }
+h3 { font-size:18px; font-weight:650; }
+small,.muted { color:var(--sub); }
+[hidden] { display:none!important; }
+.top { background:var(--paper); border-bottom:1px solid var(--line); }
+.top-inner { max-width:1680px; margin:auto; padding:16px 28px; display:flex; gap:16px; align-items:center; justify-content:space-between; }
+.brand { font-weight:650; }
+.brand span { font-weight:400; color:var(--sub); margin-left:12px; font-size:14px; }
+.tag { font-size:12px; padding:3px 9px; background:var(--soft); color:var(--blue); border-radius:5px; white-space:nowrap; }
+.tag.pending { background:#f4eedf; color:#735923; }
+.wrap { max-width:1680px; margin:22px auto; padding:0 28px 40px; }
+.notice { font-size:13px; color:var(--sub); margin-bottom:20px; }
+.heading { display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:22px; }
+.switch { display:flex; border:1px solid var(--line); padding:4px; border-radius:9px; background:var(--paper); flex-shrink:0; }
+.switch button { border:0; background:transparent; border-radius:5px; padding:7px 16px; color:var(--sub); }
+.switch button[aria-pressed=true] { background:var(--blue); color:white; }
+.layout { display:grid; grid-template-columns:172px minmax(0,1fr); gap:24px; align-items:start; }
+.sidebar { padding:18px 0; }
+.route-toggle { display:none; }
+.eyebrow { font-size:12px; font-weight:600; color:var(--sub); margin:0 0 8px; }
+.sidebar .eyebrow { padding-left:12px; }
+.stages { list-style:none; padding:0; margin:0; }
+.stages li { padding:12px; margin-bottom:4px; border-radius:7px; color:var(--sub); }
+.stages strong { font-size:14px; display:block; font-weight:500; }
+.stages li[aria-current=step] { background:#e6edf1; color:var(--blue); }
+.stages li[aria-current=step] strong { font-weight:650; }
+.stages small { display:block; font-size:12px; }
+.sidebar-foot { border-top:1px solid var(--line); padding:16px 12px 0; margin-top:14px; font-size:12px; color:var(--sub); }
+.stage-box { padding:18px 0 20px; border-bottom:1px solid var(--line); margin-bottom:12px; }
+.stage-box h2 { font-size:19px; }
+.stage-box p { font-size:14px; }
+.meta { display:flex; flex-wrap:wrap; gap:6px 22px; margin-top:12px; font-size:12px; color:var(--sub); }
+.meta b { color:var(--ink); font-weight:500; }
+.tabs { display:flex; gap:24px; margin:0 0 18px; }
+.tabs button { border:0; background:transparent; color:var(--sub); padding:9px 2px; border-bottom:3px solid transparent; }
+.tabs button[aria-pressed=true] { border-color:var(--blue); color:var(--blue); font-weight:650; }
+.count { font-size:11px; margin-left:5px; background:#e5eae9; padding:2px 5px; border-radius:4px; }
+.sheet { background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:30px 32px; }
+.sheet-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.id { font-size:12px; color:var(--sub); }
+.focus-box { background:#eaf0f3; padding:20px 24px; border-radius:8px; margin:20px 0 28px; }
+.focus-label { font-size:13px; font-weight:600; color:#506b7c; margin:0 0 6px; }
+.focus-title { font-size:25px; font-weight:650; line-height:1.5; margin:0; color:#243f50; }
+.focus-context { color:#526672; font-size:14px; margin:10px 0 0; }
+.section-heading { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.step-number { display:flex; align-items:center; justify-content:center; flex-shrink:0; width:30px; height:30px; font-size:12px; font-weight:650; border-radius:50%; color:#50715d; background:#e8eee7; }
+.lead { font-size:15px; line-height:1.9; color:var(--sub); margin:12px 0 20px; max-width:42em; }
+.facts { display:grid; grid-template-columns:1fr 1fr; gap:18px 28px; margin:0 0 22px; }
+.facts div { padding:14px 0; border-top:1px solid var(--line); }
+.facts dt { font-size:14px; font-weight:650; margin-bottom:6px; }
+.facts dd { margin:0; font-size:15px; color:#47565f; line-height:1.9; }
+.disclosure,.source { border-top:1px solid var(--line); padding:0; margin:0; }
+.disclosure summary,.source summary { cursor:pointer; padding:15px 0; min-height:48px; font-size:14px; color:var(--sub); }
+.disclosure[open] summary,.source[open] summary { color:var(--blue); }
+.disclosure>p,.detail-body { font-size:14px; line-height:1.9; color:var(--sub); padding:0 0 16px; }
+.source-content { font-size:14px; line-height:1.9; background:#f5f6f2; padding:18px; border-radius:6px; margin:0 0 20px; }
+.source-content blockquote { border-left:2px solid #bdc9cf; padding-left:12px; margin:10px 0; }
+.warning { border-left:3px solid #c7aa74; padding:0 0 0 14px; margin:20px 0; color:var(--amber); }
+.warning strong { font-size:14px; font-weight:550; }
+.limit-details summary { cursor:pointer; font-size:12px; padding:8px 0; }
+.limit-details p { font-size:14px; line-height:1.9; margin:0; }
+.review { border-top:1px solid var(--line); padding-top:26px; margin-top:4px; }
+.review .hint { margin-left:42px; }
+.choices { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0; }
+.choice { border:1px solid #dce2df; border-radius:7px; padding:11px 13px; display:flex; gap:9px; align-items:center; cursor:pointer; font-size:15px; }
+.choice:has(input:checked) { border-color:var(--blue); background:var(--soft); }
+input { accent-color:var(--blue); width:17px; height:17px; flex-shrink:0; }
+textarea { display:block; width:100%; resize:vertical; min-height:85px; padding:12px; border:1px solid #bac6c8; border-radius:7px; margin-top:7px; color:var(--ink); background:#fff; font-size:16px; }
+.fieldlabel { font-size:14px; }
+.actions,.action-footer { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:18px; }
+.primary,.secondary { padding:10px 18px; border-radius:7px; font-weight:600; font-size:15px; }
+.primary { background:var(--blue); color:white; border:1px solid var(--blue); }
+.secondary { background:var(--paper); color:var(--blue); border:1px solid #b7c7d7; }
+.hint { font-size:12px; color:var(--sub); }
+.error { color:#a52b23; font-size:14px; }
+.next { font-size:13px; margin-top:20px; color:var(--sub); }
+.interview-steps { margin:0; }
+.interview-step { display:flex; gap:16px; padding:24px 0; border-bottom:1px solid var(--line); }
+.interview-step:first-child { padding-top:0; }
+.interview-step:last-child { border:0; }
+.step-content { flex:1; min-width:0; }
+.key-answer { font-size:17px; margin:10px 0 4px; }
+.support { font-size:13px; color:var(--sub); line-height:1.85; margin:4px 0 0; }
+.question { background:#f3f5f3; border-radius:7px; padding:18px 20px; margin:14px 0 0; font-size:18px; line-height:1.9; }
+.question p { margin:0; }
+.question .followup { border-top:1px solid #dee5df; margin-top:14px; padding-top:14px; font-size:16px; }
+.followup span { display:block; font-size:12px; font-weight:550; color:#607268; margin-bottom:4px; }
+.takeaways { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:0; margin:16px 0; list-style:none; }
+.takeaways li { background:#f5f5ef; padding:14px 16px; border-radius:7px; }
+.takeaways strong { display:block; font-size:15px; font-weight:650; margin-bottom:8px; }
+.takeaways span { display:block; color:var(--sub); font-size:13px; line-height:1.9; }
+.boundary { color:var(--amber); font-size:13px; line-height:1.85; margin:12px 0 0; }
+.action-footer { margin:6px 0 26px; padding-top:2px; }
+.details-group { margin-top:12px; }
+.return-steps { padding-left:22px; color:var(--sub); font-size:14px; line-height:2; }
+.details-group .support { padding-bottom:16px; }
+.export { margin-top:18px; padding:24px; background:var(--paper); border:1px solid var(--line); border-radius:10px; }
+.export textarea { min-height:175px; font-size:14px; }
+.export h3 { font-size:17px; }
+.footer { font-size:12px; color:var(--sub); margin-top:22px; }
+.readystate { font-size:13px; color:var(--blue); }
+
+
+/* 核对阅读区按业务用途、规则、实例、未知分组。 */
+#review-panel .reading-column { container-type:inline-size; }
+.review-block { margin:0 0 16px; padding:18px; border:1px solid #e3e7e2; border-radius:9px; }
+.block-label { font-size:14px; line-height:1.5; font-weight:650; margin:0 0 12px; color:#4b6556; }
+.block-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+.block-heading .block-label { margin:0; }
+.purpose-block { background:#f3f5ef; border-color:#f3f5ef; }
+.purpose-answer { font-size:17px; line-height:1.7; font-weight:550; margin:0; }
+.scope-note { font-size:13px; color:var(--sub); margin:8px 0 0; line-height:1.8; }
+.rule-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0; }
+.rule-cards>div { padding-right:12px; border-right:1px solid var(--line); }
+.rule-cards>div:last-child { padding-right:0; border:0; }
+.rule-cards dt { font-size:12px; color:var(--sub); margin-bottom:8px; }
+.rule-cards dd { margin:0; }
+.rule-value { display:block; color:var(--ink); font-size:17px; font-weight:650; line-height:1.5; }
+.rule-note { display:block; margin-top:6px; color:var(--sub); font-size:12px; line-height:1.7; }
+.calculation { border-top:1px solid var(--line); padding-top:14px; margin-top:16px; }
+.calculation-label { color:var(--sub); font-size:12px; }
+.calculation-steps { display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; list-style:none; padding:0; margin:8px 0 0; }
+.calculation-steps li { font-size:13px; line-height:1.8; color:#37536a; }
+.calculation-steps li+li::before { content:'→'; color:#89989e; margin-right:12px; }
+.example-block { background:#f3f6f8; border-color:#e9eef0; }
+.example-id { font-size:12px; color:var(--sub); }
+.example-track { list-style:none; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; padding:0; margin:0; }
+.example-track li { position:relative; }
+.example-track li+li::before { content:'→'; position:absolute; left:-15px; top:17px; color:#8a9da7; }
+.example-event { display:block; font-size:12px; color:var(--sub); margin-bottom:4px; }
+.example-value { display:block; font-size:18px; font-weight:650; color:#385b73; line-height:1.55; }
+.example-track li:last-child .example-value { color:#376548; }
+.example-note { margin:12px 0 0; font-size:12px; color:var(--sub); line-height:1.8; }
+.pending-block { background:#faf7ef; border-color:#ece4d3; }
+.pending-block .block-label { color:#80632e; }
+.pending-block>p { font-size:14px; line-height:1.85; color:#715a30; margin:0; }
+.text-action { display:block; border:0; background:transparent; padding:8px 0; color:var(--blue); font-size:13px; text-align:left; }
+.pending-block .limit-details { border-top:1px solid #e9e1d3; }
+.pending-block .limit-details summary { min-height:36px; color:#7e704e; }
+.pending-block .limit-details p { font-size:13px; color:#715a30; padding-bottom:4px; }
+@container(max-width:460px) {
+ .rule-cards { grid-template-columns:1fr; gap:0; }
+ .rule-cards>div { display:grid; grid-template-columns:76px minmax(0,1fr); gap:10px; padding:10px 0; border:0; border-bottom:1px solid var(--line); }
+ .rule-cards dt { margin:4px 0 0; }
+ .rule-value { font-size:16px; }
+ .rule-note { margin-top:3px; }
+ .example-track { grid-template-columns:1fr; gap:12px; }
+ .example-track li { display:grid; grid-template-columns:76px minmax(0,1fr); align-items:baseline; gap:10px; }
+ .example-track li+li::before { display:none; }
+ .example-event { margin:0; }
+}
+@media(max-width:540px) { .review-block { padding:15px; } .purpose-answer { font-size:16px; } }
+
+/* 共用内容区：左侧理解，右侧核对；不设置列内滚动。 */
+.work-columns { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(330px,.9fr); gap:36px; align-items:start; }
+.reading-column,.action-column { min-width:0; }
+.action-column { border-left:1px solid var(--line); padding-left:28px; }
+.action-column .review { border:0; padding:0; margin:0; }
+.action-column .review .hint { margin-left:0; }
+.action-column .choices { grid-template-columns:1fr; }
+.action-column .interview-step { padding:0; border:0; gap:12px; }
+.action-column .takeaways { grid-template-columns:1fr; gap:10px; }
+.action-column .takeaways li { display:grid; grid-template-columns:100px minmax(0,1fr); gap:12px; align-items:start; padding:12px 14px; }
+.action-column .takeaways strong { margin:0; }
+.action-column .action-footer { margin:22px 0; }
+.action-column .actions { align-items:start; flex-direction:column; gap:8px; }
+.action-column .export { padding:18px; background:#f4f6f2; }
+.action-column .export textarea { min-height:200px; }
+.stage-box { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:4px 24px; padding:14px 0 18px; }
+.stage-box h2,.stage-box p { grid-column:1; }
+.stage-box p { margin:0; }
+.stage-box .meta { grid-column:2; grid-row:1 / span 2; display:grid; gap:4px; margin:0; }
+@media(max-width:1300px) {
+ .layout { grid-template-columns:1fr; gap:0; }
+ .sidebar { padding:0; display:flex; align-items:start; gap:12px; }
+ .sidebar .eyebrow,.sidebar-foot,.stages li:not([aria-current=step]) { display:none; }
+ .stages { flex:1; }
+ .stages li[aria-current=step] { display:flex; align-items:center; gap:14px; padding:10px 14px; }
+ .sidebar.route-expanded .stages li:not([aria-current=step]) { display:block; }
+ .route-toggle { display:block; background:transparent; border:0; color:var(--sub); font-size:13px; padding:6px 12px; }
+}
+@media(max-width:999px) {
+ .work-columns { grid-template-columns:1fr; gap:28px; }
+ .action-column { border-left:0; border-top:1px solid var(--line); padding:24px 0 0; }
+ .action-column .choices { grid-template-columns:1fr 1fr; }
+ .stage-box { display:block; }
+ .stage-box .meta { display:flex; margin-top:12px; }
+}
+
+@media(max-width:850px) {
+ .layout { grid-template-columns:1fr; gap:0; }
+ .sidebar { padding:0; }
+ .sidebar .eyebrow,.sidebar-foot,.stages li:not([aria-current=step]) { display:none; }
+ .stages li[aria-current=step] { display:flex; align-items:center; gap:14px; padding:10px 14px; }
+ .sidebar.route-expanded .stages li:not([aria-current=step]) { display:block; }
+ .route-toggle { display:block; background:transparent; border:0; color:var(--sub); font-size:13px; padding:6px 12px; }
+ .heading { align-items:start; flex-direction:column; }
+ .sheet { padding:26px; }
+ .top-inner { padding:16px 20px; }
+ .wrap { padding:0 20px 30px; }
+ .brand span { display:none; }
+}
+@media(max-width:540px) {
+ h1 { font-size:23px; } h2 { font-size:22px; }
+ .wrap { padding:0 12px 24px; margin-top:16px; }
+ .sheet { padding:20px 18px; }
+ .stage-box { padding:16px 2px; }
+ .facts,.choices,.action-column .choices { grid-template-columns:1fr; }
+ .facts { gap:0; }
+ .sheet-head { align-items:start; }
+ .top-inner { padding:14px 12px; }
+ .switch { width:100%; } .switch button { flex:1; }
+ .meta { gap:5px 12px; }
+ .sidebar { display:block; }
+ .action-column .takeaways li { grid-template-columns:1fr; gap:4px; }
+ button { white-space:normal; }
+ .id { overflow-wrap:anywhere; }
+ .focus-box { padding:18px; margin:18px 0 24px; }
+ .focus-title { font-size:22px; }
+ .focus-context { font-size:13px; }
+ .interview-step { gap:10px; padding:22px 0; }
+ .step-number { width:25px; height:25px; font-size:11px; }
+ .key-answer { font-size:16px; }
+ .question { padding:14px; font-size:17px; }
+ .takeaways { grid-template-columns:1fr; gap:8px; }
+ .takeaways li { padding:12px 14px; }
+ .takeaways strong { margin-bottom:4px; }
+ .takeaways span { font-size:13px; }
+ .review .hint { margin-left:37px; }
+ .review .actions .hint { margin-left:0; }
+ .action-footer { align-items:start; flex-direction:column; gap:10px; }
+}
+@media print {
+ body { background:white; }
+ .top,.sidebar,.switch,.tabs,.review,.actions,.action-footer,.notice { display:none; }
+ .layout,.work-columns { display:block; }
+ .action-column { border:0; padding:0; }
+ .wrap { max-width:none; margin:0; padding:0; }
+ .sheet,.stage-box,.export { border:0; padding:10px 0; }
+ .heading { margin-bottom:10px; }
+ .source-content { background:white; }
+ .footer { margin-top:10px; }
+ textarea { border:0; }
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-inner"><div class="brand">业务建模工具包<span>在工作中学习</span></div><span class="tag">交互样稿 · 未接入项目</span></div></header>
+<main class="wrap">
+ <p class="notice">虚构维修案例 · 样稿 2026-11-20。选择仅在本页有效；刷新不保留，下载反馈后可交给 AI。</p>
+ <div class="heading"><div><p class="eyebrow">当前工作 / 本步核对</p><h1>看清这一条，再走下一步</h1></div><div class="switch" aria-label="切换模块"><button type="button" data-mode="model" aria-pressed="false">业务模型</button><button type="button" data-mode="metric" aria-pressed="true">指标库</button></div></div>
+ <div class="layout">
+  <aside class="sidebar" aria-label="流程位置"><p class="eyebrow">完整路线</p><ol class="stages" id="stages"></ol><button type="button" class="route-toggle" id="route-toggle" aria-expanded="false" aria-controls="stages">展开完整路线</button><div class="sidebar-foot">路线用于定位。<br>演示未运行构建、测试，也未取得业务确认。</div></aside>
+  <div>
+   <section class="stage-box" aria-labelledby="stage-title"><h2 id="stage-title"></h2><p id="purpose" class="muted"></p><div class="meta"><span>AI 产物：<b>演示草稿已备好</b></span><span>本人核对：<b id="human-status">尚未反馈</b></span><span>业务待核：<b>1 项</b></span></div></section>
+   <nav class="tabs" aria-label="核对内容"><button type="button" data-view="review" aria-pressed="true">本步核对<span class="count">1</span></button><button type="button" data-view="questions" aria-pressed="false">带去业务的问题<span class="count">1</span></button></nav>
+   <section class="sheet" id="review-panel" aria-labelledby="item-title">
+    <div class="sheet-head"><span class="id" id="item-id"></span><span class="tag">演示草稿 · 待核对</span></div>
+    <h2 id="item-title"></h2>
+    <div class="focus-box"><p class="focus-label">这次请核对</p><p class="focus-title" id="review-focus"></p></div>
+    <div class="work-columns">
+    <div class="reading-column">
+    <div class="section-heading"><span class="step-number">01</span><h3>先看懂这条内容</h3></div>
+    <section class="review-block purpose-block" aria-labelledby="purpose-label"><h4 id="purpose-label" class="block-label">用来判断什么</h4><p class="purpose-answer" id="meaning"></p><p class="scope-note" id="scope-note"></p></section>
+    <section class="review-block" aria-labelledby="rules-label"><h4 id="rules-label" class="block-label">口径怎么定</h4><dl class="rule-cards" id="facts"></dl><div class="calculation"><span class="calculation-label" id="flow-label"></span><ol class="calculation-steps" id="calculation-steps"></ol></div></section>
+    <section class="review-block example-block" aria-labelledby="example-label"><div class="block-heading"><h4 id="example-label" class="block-label">一例看懂</h4><span class="example-id" id="example-id"></span></div><ol class="example-track" id="example-track"></ol><p class="example-note" id="example-note"></p></section>
+    <section class="review-block pending-block" aria-labelledby="pending-label"><div class="block-heading"><h4 id="pending-label" class="block-label">哪些仍待核</h4><span class="tag pending">待业务核实</span></div><p id="limit-summary"></p><button type="button" class="text-action" id="open-pending">查看要问业务的问题 →</button><details class="limit-details"><summary>展开完整适用范围与限制</summary><p id="limit"></p></details></section>
+    <details class="source"><summary>查看依据与原文位置</summary><div class="source-content" id="sources"></div></details>
+    </div>
+    <aside class="action-column" aria-label="本条核对操作">
+    <form class="review" id="review-form">
+     <div class="section-heading"><span class="step-number">02</span><h3>留下你的判断</h3></div><p class="hint">选一种处理方式，或直接写意见。</p>
+     <div class="choices">
+      <label class="choice"><input type="radio" name="decision" value="理解一致">这版理解一致</label>
+      <label class="choice"><input type="radio" name="decision" value="需要解释">请先解释一下</label>
+      <label class="choice"><input type="radio" name="decision" value="修改意见">我有修改意见</label>
+      <label class="choice"><input type="radio" name="decision" value="二次核实">带去业务核实</label>
+     </div>
+     <label class="fieldlabel" for="feedback">补充意见 <span class="muted">（可以用自己的话说）</span></label><textarea id="feedback" placeholder="例如：完工和验收我还分不清，请先解释；我会找业务核对重复签认。"></textarea>
+     <p class="error" id="error" role="alert" hidden></p>
+     <div class="actions"><button type="submit" class="primary">生成给 AI 的反馈</button><span class="hint">生成后可下载；不会提交或推进项目。</span></div>
+    </form>
+    <p class="next" id="next"></p>
+    <div id="review-export-slot"></div>
+    </aside>
+    </div>
+   </section>
+   <section class="sheet" id="questions-panel" aria-labelledby="question-title" hidden>
+    <div class="sheet-head"><span class="id">Q-DEMO-01 · MR2</span><span class="tag pending">待业务核实</span></div>
+    <h2 id="question-title">一张工单，两份签认</h2>
+    <div class="focus-box"><p class="focus-label">这次只确认一件事</p><p class="focus-title">哪份有效，按什么判断？</p><p class="focus-context">影响：是否计入验收量，以及归属哪个月。</p></div>
+    <div class="work-columns interview-columns">
+     <div class="reading-column">
+      <div class="interview-steps">
+       <section class="interview-step" aria-labelledby="ask-who"><span class="step-number">01</span><div class="step-content"><h3 id="ask-who">找谁问</h3><p class="key-answer">实际办理验收、保管签认记录的人</p><p class="support">先了解真实处理经过；规则由谁确认，再现场核实。</p></div></section>
+       <section class="interview-step" aria-labelledby="ask-how"><span class="step-number">02</span><div class="step-content"><h3 id="ask-how">现场怎么问</h3><div class="question"><p>“最近有没有同一工单，留下两份签认记录的情况？”</p><p class="followup"><span>如果有，再追问</span>“当时怎么判断哪份有效？能一起看一下记录和处理经过吗？”</p></div></div></section>
+      </div>
+      <div class="details-group" aria-label="背景说明">
+       <details class="disclosure"><summary>背景依据与拿不到资料的影响</summary><div class="detail-body"><p><strong>已有依据：</strong>虚构示例 MR2 只覆盖每单最多一条有效签认；多份记录如何处理，尚无依据。这里是对适用范围的核查。</p><p><strong>缺口影响：</strong>涉及有效验收规则、计入月份，以及去重与跨月测试。资料未取得前，单签认例子可用于说明，多签认相关实现和全量结论不能确认。</p><p><strong>取得标准：</strong>带回实际处理经过、记录标识和时间、判断原话与说明人，并保留适用范围。没有案例或依据不要求对方编造；经手人陈述不自动升级为正式制度。</p></div></details>
+      </div>
+     </div>
+     <aside class="action-column" aria-label="本次取证与带走材料">
+      <section class="interview-step" aria-labelledby="bring-back"><span class="step-number">03</span><div class="step-content"><h3 id="bring-back">至少带回这三样</h3><ul class="takeaways"><li><strong>一个真实案例</strong><span>当时怎么处理<br>哪份记录生效</span></li><li><strong>相应记录</strong><span>工单、签认标识<br>以及对应时间</span></li><li><strong>判断依据</strong><span>原问原答、说明人<br>以及适用范围</span></li></ul><p class="boundary">没有实际案例就保留待核，不能直接取第一份或最后一份。</p></div></section>
+      <div class="action-footer"><button type="button" class="primary" id="question-export">整理这条访谈问题</button><span class="hint">生成可带走的提纲；尚未取得业务答复。</span></div>
+      <div class="details-group" aria-label="后续处理">
+       <details class="disclosure"><summary>答复回来后，AI 怎么接着处理？</summary><ol class="return-steps"><li>保留原问原答与来源。</li><li>核对说法适用于什么情况。</li><li>列出受影响的模型、指标和测试。</li><li>交你核对处理建议，再安排修订。</li></ol><p class="support">本页只准备访谈问题，不会联系业务方或自动推进项目。</p></details>
+      </div>
+      <div id="question-export-slot"></div>
+     </aside>
+    </div>
+   </section>
+   <section class="export" id="export-panel" aria-labelledby="export-title" hidden><h3 id="export-title">反馈草稿</h3><p class="hint" id="export-hint"></p><textarea id="export-text" aria-label="可复制的反馈内容" readonly></textarea><div class="actions"><button type="button" class="secondary" id="download">下载本条反馈</button><span class="readystate" id="download-status" aria-live="polite"></span></div></section>
+   <p class="footer">后台知识与证据仍由 AI 维护。页面绑定条目和版本，阅读、反馈、采用、真实测试和业务签署各有自己的状态。</p>
+  </div>
+ </div>
+</main>
+<script>
+(() => {
+ 'use strict';
+ const data = {
+  metric:{
+   node:'M1', id:'MET-DEMO-01', version:'demo-v1', title:'月度有效验收工单数',
+   stage:'M1 · 核对指标口径', purpose:'本步先讲清算什么、怎样算、依据在哪里。核对后再准备独立计算样例。',
+   meaning:'这个月，有多少张工单完成了客户的有效验收？',
+   scope:'只看验收数量；不能据此判断收入、满意度或结算金额。', rulesLabel:'口径怎么定',
+   facts:[['统计对象','工单','每张工单只计一次'],['归月依据','有效签认日期','不按施工完工日期'],['去重依据','工单 ID','派工 ID 不能替代']],
+   flowLabel:'计算顺序', flow:['筛选本月有效签认','按工单 ID 去重','计数，单位：张'],
+   exampleId:'工单 B · 2026 年', exampleSteps:[['施工完工','11 月 30 日'],['有效签认','12 月 1 日'],['计入月份','12 月']],
+   exampleNote:'因此不计入 11 月。依据 MR1–MR3；这是规则示例，实际程序未运行。',
+   pending:'缺签认仅表示资料未知；出现多份签认时，先核实哪份有效。不能直接当零，或任取一份。',
+   limit:'本例按 Asia/Shanghai 的自然月统计，月初包含、下月初不含。本小样本每单最多一条有效签认；缺签认不代表未验收，多条冲突签认须待核。只做只读汇总，不做结算或改状态；不能推断真实项目已覆盖异常。',
+   next:'你核对后，流程下一步是 M2：让 AI 准备独立样例和期望结果。仍由你发出下一步指令。',
+   steps:[['M0','任务与适配'],['M1','口径与映射'],['M2','独立标准'],['M3','构建指标库'],['M4','加载与检查'],['M5','实际验证'],['M6','验收与交接']]
+  },
+  model:{
+   node:'S3', id:'CAND-DEMO-01', version:'demo-v1', title:'工单、派工与验收签认',
+   stage:'S3 · 组织业务模型', purpose:'本步把已有候选认识组织成模型草稿，解释对象之间的关系和仍待核的边界。',
+   meaning:'分清“维修任务、人员安排、客户验收”三件事。',
+   scope:'仅据虚构维修材料形成的模型草稿，尚无真实项目采用记录。', rulesLabel:'对象与关系怎么定',
+   facts:[['工单','维修任务','用工单 ID 区分身份'],['派工','人员安排','多次派工可关联同单'],['签认','客户验收','签认与完工时间分开']],
+   flowLabel:'本例的关系', flow:['一张工单','可以关联多条派工记录'],
+   exampleId:'工单 A · MR2–MR3', exampleSteps:[['业务任务','工单 A'],['派工记录','A1、A2'],['工单数量','仍为 1 张']],
+   exampleNote:'两次派工不等于两张工单。保留关联和工单身份，后续统计才能避免重复计数。',
+   pending:'本例限定每单最多一条有效签认；真实业务出现多份签认时，取舍规则及时间仍需核实。',
+   limit:'这里使用 MR1–MR3 的虚构材料。不能把“样本每单最多一条有效签认”外推为全公司的规则；缺签认仅说明材料未知。用户理解一致不等于业务方确认或正式采用。',
+   next:'你核对后，流程下一步是 S4：设计来源对照和使用测试。未决条目仍保留待核，不靠点击变成事实。',
+   steps:[['plan','任务与方案'],['S1','材料盘点'],['S2','候选提取'],['S3','核查建模'],['S4','测试准备'],['S5','实际使用'],['S6','修订回归']]
+  }
+ };
+ const $=id=>document.getElementById(id);
+ $('route-toggle').addEventListener('click',()=>{const expanded=$('route-toggle').getAttribute('aria-expanded')!=='true';$('route-toggle').setAttribute('aria-expanded',String(expanded));$('route-toggle').textContent=expanded?'收起完整路线':'展开完整路线';document.querySelector('.sidebar').classList.toggle('route-expanded',expanded);});
+ let mode='metric', view='review', drafts={metric:{choice:'',text:''},model:{choice:'',text:''}}, exportData=null;
+ function clearExport(){exportData=null;$('export-panel').hidden=true;$('download-status').textContent='';}
+ function capture(){drafts[mode]={choice:document.querySelector('input[name="decision"]:checked')?.value||'',text:$('feedback').value};}
+ function showView(name){view=name;document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));$('review-panel').hidden=view!=='review';$('questions-panel').hidden=view!=='questions';clearExport();}
+ function render(){
+  const d=data[mode]; document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
+  $('stage-title').textContent=d.stage;$('purpose').textContent=d.purpose;$('item-id').textContent=d.id+' · '+d.version;$('item-title').textContent=d.title;
+  $('meaning').textContent=d.meaning;$('scope-note').textContent=d.scope;$('rules-label').textContent=d.rulesLabel;
+  $('review-focus').textContent=mode==='metric'?'一单只计一次，按有效签认日期归月。':'工单、派工、签认，是三种不同的业务记录。';
+  $('limit-summary').textContent=d.pending;$('limit').textContent=d.limit;$('next').textContent=d.next;
+  $('flow-label').textContent=d.flowLabel;
+  $('calculation-steps').replaceChildren(...d.flow.map(value=>{const li=document.createElement('li');li.textContent=value;return li;}));
+  $('example-id').textContent=d.exampleId;$('example-note').textContent=d.exampleNote;
+  $('example-track').replaceChildren(...d.exampleSteps.map(([label,value])=>{const li=document.createElement('li'),event=document.createElement('span'),answer=document.createElement('strong');event.className='example-event';event.textContent=label;answer.className='example-value';answer.textContent=value;li.append(event,answer);return li;}));
+  $('stages').replaceChildren(...d.steps.map(([code,label])=>{const li=document.createElement('li'),strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=code+' · '+label;small.textContent=code===d.node?'当前演示节点':'';if(code===d.node)li.setAttribute('aria-current','step');li.append(strong,small);return li;}));
+  $('facts').replaceChildren(...d.facts.map(([label,value,note])=>{const div=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd'),answer=document.createElement('strong'),hint=document.createElement('span');dt.textContent=label;answer.className='rule-value';answer.textContent=value;hint.className='rule-note';hint.textContent=note;dd.append(answer,hint);div.append(dt,dd);return div;}));
+  $('sources').innerHTML='<p><strong>来源：本包《维修指标完整示范》第一节，MR1–MR3。</strong>均为虚构教学材料，不是客户原件。</p><blockquote>MR1：按客户有效验收签认时间统计每月工单数量。<br>MR2：每个统计对象为工单；派工编号不是工单编号。<br>MR3：A 有两条派工；B 在 11 月完工、12 月签认。</blockquote><p>以上为来源摘要。<a href="../维修指标-完整示范.md" target="_blank" rel="noopener">可选：打开完整示范</a></p><p>提取后的演示解释与原文不是同一层；真实项目需替换成实际来源、定位和版本。</p>';
+  document.querySelectorAll('input[name="decision"]').forEach(r=>{r.checked=r.value===drafts[mode].choice;});$('feedback').value=drafts[mode].text;$('error').hidden=true;$('human-status').textContent=drafts[mode].choice||drafts[mode].text?'本页意见待交 AI':'尚未反馈';showView('review');
+ }
+ document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{capture();mode=b.dataset.mode;render();}));
+ $('open-pending').addEventListener('click',()=>{showView('questions');$('question-title').scrollIntoView({block:'start'});});
+ document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+ $('review-form').addEventListener('input',()=>{capture();clearExport();$('error').hidden=true;$('human-status').textContent=drafts[mode].choice||drafts[mode].text?'本页意见待交 AI':'尚未反馈';});
+ function showExport(payload,text,title,hint){$(view==='questions'?'question-export-slot':'review-export-slot').append($('export-panel'));exportData=payload;$('export-title').textContent=title;$('export-hint').textContent=hint;$('export-text').value=text;$('export-panel').hidden=false;$('download-status').textContent='';}
+ $('review-form').addEventListener('submit',event=>{event.preventDefault();capture();const f=drafts[mode],d=data[mode];if(!f.choice&&!f.text.trim()||(f.choice==='修改意见'&&!f.text.trim())){$('error').textContent=f.choice==='修改意见'?'请写下需要调整的地方，方便 AI 按你的意思处理。':'请选择处理方式，或直接写下意见。';$('error').hidden=false;return;}
+  const payload={kind:'review_draft',example:true,project:'虚构维修示范',module:mode,node:d.node,item_id:d.id,item_version:d.version,decision:f.choice||'自由反馈',user_text:f.text,source_ids:['MR1','MR2','MR3'],open_questions:['Q-DEMO-01'],created_at:new Date().toISOString(),status:'本页草稿，未交给 AI；非业务确认',next_step_requested:false};
+  const text='请按工具包处理这一条反馈，先解释影响，不自动推进后续步骤。\n项目：虚构维修示范（仅体验页面）\n条目：'+d.id+' / '+d.version+' / '+d.node+'\n我的处理：'+payload.decision+'\n我的原话：'+(f.text||'未补充')+'\n业务仍待核：Q-DEMO-01 多份签认。\n这份反馈不代表业务方确认、正式采用或验收通过。';
+  showExport(payload,text,'给 AI 的反馈草稿','可复制下面内容，或下载包含条目、版本和原话的反馈。未自动写入任何项目。');
+ });
+ $('question-export').addEventListener('click',()=>{const text='二次访谈提纲 · Q-DEMO-01\n虚构维修示范 / '+data[mode].id+' / '+data[mode].version+'\n\n现场问法：最近有没有同一工单留下两份签认记录的情况？当时怎么判断哪份有效，能一起看一下记录和处理经过吗？\n\n找谁：实际办理验收、保管签认记录的人；规则确认责任另核。\n带回：原问原答、处理实例、记录标识与时间、判断依据、说明人及范围。没有案例保留未知。\n影响：有效验收规则、计入月份、去重与跨月测试。\n回来后：交 AI 核来源与影响，再核对修订建议。\n实际答复：尚未取得。';showExport({kind:'interview_outline',example:true,item_id:data[mode].id,item_version:data[mode].version,question_id:'Q-DEMO-01',text},text,'可带走的访谈提纲','这是待问问题，尚无业务答复。复制或下载后使用。');});
+ $('download').addEventListener('click',()=>{if(!exportData)return;const blob=new Blob([JSON.stringify(exportData,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=exportData.kind+'-'+exportData.item_id+'-'+exportData.item_version+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('download-status').textContent='已发起下载；请把文件交给 AI，不会自动提交。';});
+ render();
+ if(location.hash==='#questions')showView('questions');
+})();
+</script>
+</body>
+</html>
